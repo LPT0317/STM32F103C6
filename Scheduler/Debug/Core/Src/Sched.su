@@ -2,6 +2,6 @@ Sched.c:30:10:alloc_task	16	static
 Sched.c:39:6:free_task	16	static
 Sched.c:44:6:print_Array	16	static
 Sched.c:50:6:print_Task	16	static
-Sched.c:60:6:Add_Task	16	static
-Sched.c:72:6:SCH_Init	16	static
-Sched.c:88:6:SCH_Add_Task	32	static
+Sched.c:60:6:Add_Task	40	static
+Sched.c:108:6:SCH_Init	16	static
+Sched.c:124:6:SCH_Add_Task	32	static

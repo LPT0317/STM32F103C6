@@ -115,13 +115,13 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_UART_Receive_IT(&huart2, &temp, 1);
   SCH_Init();
-  SCH_Add_Task(Task_A_Run, 200, 100);
+  SCH_Add_Task(Task_A_Run, 100, 100);
   SCH_Add_Task(Task_B_Run, 100, 100);
   SCH_Add_Task(Task_C_Run, 300, 100);
   SCH_Add_Task(Task_C_Run, 50, 100);
   SCH_Add_Task(Task_C_Run, 150, 100);
   //print_Array();
-  print_Task();
+  //print_Task();
   /* USER CODE END 2 */
 
   /* Infinite loop */
