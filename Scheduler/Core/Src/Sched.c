@@ -21,14 +21,18 @@ typedef struct {
 }sTask;
 
 #define SCH_MAX_TASKS 10
-sTask SCH_tasks_G[SCH_MAX_TASKS];
+#define RAM_SIZE 30
+sTask SCH_tasks_G[RAM_SIZE];
 uint32_t head = -1;
 uint32_t tail = -1;
 uint32_t size = 0;
 
+uint32_t head_ready_queue = -1;
+uint32_t tail_ready_queue = -1;
+
 /* HELP FUNC ***************************************************************/
 uint32_t alloc_task(void){
-	for(uint32_t i = 0; i < SCH_MAX_TASKS; i++)
+	for(uint32_t i = 0; i < RAM_SIZE; i++)
 	{
 		if(SCH_tasks_G[i].busy == 0)
 			return i;
@@ -37,7 +41,7 @@ uint32_t alloc_task(void){
 }
 
 void free_task(uint32_t index){
-	if(index >= 0 && index < SCH_MAX_TASKS)
+	if(index >= 0 && index < RAM_SIZE)
 		SCH_tasks_G[index].busy = 0;
 }
 
@@ -69,6 +73,8 @@ void Add_Task(uint32_t task){
 //	tail = index;
 	if(SCH_tasks_G[task].Delay >= SCH_tasks_G[head].Delay){
 		SCH_tasks_G[task].Delay -= SCH_tasks_G[head].Delay;
+		if(SCH_tasks_G[task].Delay == 0)
+			SCH_tasks_G[task].RunMe++;
 		uint32_t curr = SCH_tasks_G[head].next;
 		for(int i = 1; i < size; i++){
 			if(SCH_tasks_G[task].Delay < SCH_tasks_G[curr].Delay)
@@ -93,9 +99,13 @@ void Add_Task(uint32_t task){
 	else{
 		uint32_t time_interval = SCH_tasks_G[head].Delay;
 		SCH_tasks_G[head].Delay -= SCH_tasks_G[task].Delay;
+		if(SCH_tasks_G[head].Delay == 0)
+			SCH_tasks_G[head].RunMe++;
 		uint32_t curr = SCH_tasks_G[head].next;
 		for(int i = 1; i < size; i++){
 			SCH_tasks_G[curr].Delay = SCH_tasks_G[curr].Delay + time_interval - SCH_tasks_G[task].Delay;
+			if(SCH_tasks_G[curr].Delay == 0)
+				SCH_tasks_G[curr].RunMe++;
 			curr = SCH_tasks_G[curr].next;
 		}
 		SCH_tasks_G[head].prev = task;
@@ -104,12 +114,39 @@ void Add_Task(uint32_t task){
 		size++;
 	}
 }
+uint32_t Get_Task(uint32_t task){
+	uint32_t tmp_task = head;
+	SCH_tasks_G[SCH_tasks_G[head].next].prev = -1;
+	head = SCH_tasks_G[head].next;
+	SCH_tasks_G[tmp_task].next = -1;
+	size--;
+	return tmp_task;
+}
+
+void Push_queue(uint32_t task){
+	if(head_ready_queue == -1){
+		head_ready_queue = task;
+	}
+	else{
+		SCH_tasks_G[tail_ready_queue].next = task;
+	}
+	tail_ready_queue = task;
+}
+
+uint32_t Pop_queue(uint32_t task){
+	if(head == -1)
+		return -1;
+	uint32_t tmp_task = head_ready_queue;
+	head_ready_queue = SCH_tasks_G[tmp_task].next;
+	SCH_tasks_G[tmp_task].next = -1;
+	return tmp_task;
+}
 /* MAIN FUNC ***************************************************************/
 void SCH_Init(void){
 	head = -1;
 	tail = -1;
 	size = 0;
-	for(int i = 0; i < SCH_MAX_TASKS; i++){
+	for(int i = 0; i < RAM_SIZE; i++){
 		SCH_tasks_G[i].pTask = NULL;
 		SCH_tasks_G[i].Delay = -1;
 		SCH_tasks_G[i].Period = -1;
@@ -123,7 +160,8 @@ void SCH_Init(void){
 
 void SCH_Add_Task(void (*pFunction)(), uint32_t Delay, uint32_t Period){
 	uint32_t index = 0;
-	if(size < SCH_MAX_TASKS){
+	index = alloc_task();
+	if(size < SCH_MAX_TASKS && index != -1){
 		index = alloc_task();
 		SCH_tasks_G[index].pTask = pFunction;
 		SCH_tasks_G[index].Delay = Delay;
@@ -140,5 +178,16 @@ void SCH_Add_Task(void (*pFunction)(), uint32_t Delay, uint32_t Period){
 }
 
 void SCH_Update(void){
+	if(head != -1){
+		if(SCH_tasks_G[head].Delay > 0){
+			SCH_tasks_G[head].Delay--;
+		}
+		else{
+
+		}
+	}
+}
+
+void SCH_Dispatch_Tasks(void){
 
 }
