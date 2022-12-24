@@ -22,6 +22,7 @@ typedef struct {
 
 #define SCH_MAX_TASKS 10
 #define RAM_SIZE 30
+#define TICK 10;
 sTask SCH_tasks_G[RAM_SIZE];
 uint32_t head = -1;
 uint32_t tail = -1;
@@ -29,6 +30,8 @@ uint32_t size = 0;
 
 uint32_t head_ready_queue = -1;
 uint32_t tail_ready_queue = -1;
+
+uint32_t time = 0;
 
 /* HELP FUNC ***************************************************************/
 uint32_t alloc_task(void){
@@ -114,7 +117,7 @@ void Add_Task(uint32_t task){
 		size++;
 	}
 }
-uint32_t Get_Task(uint32_t task){
+uint32_t Get_Task(void){
 	uint32_t tmp_task = head;
 	SCH_tasks_G[SCH_tasks_G[head].next].prev = -1;
 	head = SCH_tasks_G[head].next;
@@ -133,7 +136,7 @@ void Push_queue(uint32_t task){
 	tail_ready_queue = task;
 }
 
-uint32_t Pop_queue(uint32_t task){
+uint32_t Pop_queue(void){
 	if(head == -1)
 		return -1;
 	uint32_t tmp_task = head_ready_queue;
@@ -172,22 +175,45 @@ void SCH_Add_Task(void (*pFunction)(), uint32_t Delay, uint32_t Period){
 		SCH_tasks_G[index].prev = -1;
 		SCH_tasks_G[index].busy = 1;
 		Add_Task(index);
-		HAL_UART_Transmit(&huart2, (void *)str, sprintf(str, "\rTask List:\r"), 1000);
-		print_Task();
+//		HAL_UART_Transmit(&huart2, (void *)str, sprintf(str, "\rTask List:\r"), 1000);
+//		print_Task();
 	}
 }
 
 void SCH_Update(void){
+	time += TICK;
 	if(head != -1){
 		if(SCH_tasks_G[head].Delay > 0){
 			SCH_tasks_G[head].Delay--;
 		}
 		else{
-
+			SCH_tasks_G[head].RunMe = 1;
+			if(SCH_tasks_G[head].Period > 0){
+				SCH_tasks_G[head].Delay = SCH_tasks_G[head].Period;
+			}
+			uint32_t run_Task = Get_Task();
+			Push_queue(run_Task);
 		}
 	}
 }
 
 void SCH_Dispatch_Tasks(void){
-
+	uint32_t running = Pop_queue();
+	if(running != -1){
+		HAL_UART_Transmit(&huart2, (void *)str, sprintf(str, "Task running: %ld\r", running), 1000);
+		HAL_UART_Transmit(&huart2, (void *)str, sprintf(str, "Start: %ld\r", time), 1000);
+		(*SCH_tasks_G[running].pTask)();
+		HAL_UART_Transmit(&huart2, (void *)str, sprintf(str, "End: %ld\r", time), 1000);
+		if(SCH_tasks_G[running].Period != 0){
+			SCH_tasks_G[running].RunMe = 0;
+			Add_Task(running);
+		}
+		else{
+			HAL_UART_Transmit(&huart2, (void *)str, sprintf(str, "Task one-shot die....\r"), 1000);
+			SCH_Delete_Task(running);
+		}
+	}
+}
+void SCH_Delete_Task(uint32_t ID){
+	SCH_tasks_G[ID].busy = 0;
 }

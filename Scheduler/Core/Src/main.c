@@ -116,15 +116,8 @@ int main(void)
   HAL_UART_Receive_IT(&huart2, &temp, 1);
   SCH_Init();
   SCH_Add_Task(Task_A_Run, 100, 100);
-  SCH_Add_Task(Task_B_Run, 100, 100);
+  SCH_Add_Task(Task_B_Run, 200, 100);
   SCH_Add_Task(Task_C_Run, 300, 100);
-  SCH_Add_Task(Task_C_Run, 50, 100);
-  SCH_Add_Task(Task_C_Run, 150, 100);
-  SCH_Add_Task(Task_A_Run, 35, 100);
-  SCH_Add_Task(Task_B_Run, 15, 100);
-  SCH_Add_Task(Task_C_Run, 340, 100);
-  SCH_Add_Task(Task_C_Run, 504, 100);
-  SCH_Add_Task(Task_C_Run, 123, 100);
   //print_Array();
   //print_Task();
   /* USER CODE END 2 */
@@ -133,7 +126,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  //SCH_Dispatch_Tasks();
+	  SCH_Dispatch_Tasks();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -282,7 +275,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	//SCH_Update();
+	SCH_Update();
 }
 /* USER CODE END 4 */
 
