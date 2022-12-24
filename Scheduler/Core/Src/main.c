@@ -117,7 +117,7 @@ int main(void)
   SCH_Init();
   SCH_Add_Task(Task_A_Run, 100, 100);
   SCH_Add_Task(Task_B_Run, 200, 100);
-  SCH_Add_Task(Task_C_Run, 300, 100);
+  SCH_Add_Task(Task_C_Run, 300, 0);
   //print_Array();
   //print_Task();
   /* USER CODE END 2 */

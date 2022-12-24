@@ -65,6 +65,7 @@ void print_Task(void){
 	}
 }
 void Add_Task(uint32_t task){
+	//HAL_UART_Transmit(&huart2, (void *)str, sprintf(str, "Add Task: %ld Delay: %ld\r", task, SCH_tasks_G[task].Delay), 1000);
 	if(head == -1){
 		head = task;
 		tail = task;
@@ -116,6 +117,8 @@ void Add_Task(uint32_t task){
 		head = task;
 		size++;
 	}
+//	HAL_UART_Transmit(&huart2, (void *)str, sprintf(str, "\rTask List:\r"), 1000);
+//	print_Task();
 }
 uint32_t Get_Task(void){
 	uint32_t tmp_task = head;
@@ -123,6 +126,11 @@ uint32_t Get_Task(void){
 	head = SCH_tasks_G[head].next;
 	SCH_tasks_G[tmp_task].next = -1;
 	size--;
+	uint32_t curr = SCH_tasks_G[head].next;
+	for(int i = 0; i < size; i++){
+		SCH_tasks_G[curr].Delay -= SCH_tasks_G[head].Delay;
+		curr = SCH_tasks_G[curr].next;
+	}
 	return tmp_task;
 }
 
@@ -137,7 +145,7 @@ void Push_queue(uint32_t task){
 }
 
 uint32_t Pop_queue(void){
-	if(head == -1)
+	if(head_ready_queue == -1)
 		return -1;
 	uint32_t tmp_task = head_ready_queue;
 	head_ready_queue = SCH_tasks_G[tmp_task].next;
@@ -182,6 +190,8 @@ void SCH_Add_Task(void (*pFunction)(), uint32_t Delay, uint32_t Period){
 
 void SCH_Update(void){
 	time += TICK;
+//	HAL_UART_Transmit(&huart2, (void *)str, sprintf(str, "\rTask List:\r"), 1000);
+//	print_Task();
 	if(head != -1){
 		if(SCH_tasks_G[head].Delay > 0){
 			SCH_tasks_G[head].Delay--;
